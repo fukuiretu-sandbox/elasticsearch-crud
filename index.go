@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
+
 	"gopkg.in/olivere/elastic.v3"
 )
 
 type Tweet struct {
-	User     string
-	Message  string
+	User    string
+	Message string
 }
 
 func main() {

@@ -1,33 +1,48 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-  "reflect"
+	"os"
+	"reflect"
+
 	"gopkg.in/olivere/elastic.v3"
 )
 
 type Tweet struct {
-	User     string
-	Message  string
+	User    string
+	Message string
 }
 
 func main() {
-  fmt.Println("start")
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, `
+Usage of %s:
+   %s [OPTIONS] ARGS...
+Options\n`, os.Args[0], os.Args[0])
+		flag.PrintDefaults()
+	}
 
-  client, err := elastic.NewClient(elastic.SetURL("http://192.168.33.12:9200"))
+	var word = flag.String("word", "hoge", "search word option")
+	flag.Parse()
+
+	fmt.Printf("search word is %d \n", *word)
+
+	fmt.Println("search start...")
+	client, err := elastic.NewClient(elastic.SetURL("http://192.168.33.12:9200"))
 	if err != nil {
 		// Handle error
 		panic(err)
 	}
 
-  // Search with a term query
-  // 完全一致
+	// Search with a term query
+	// 完全一致
 	// termQuery := elastic.NewTermQuery("user", "retu")
-  // 前方一致
-  matchQuery := elastic.NewMatchPhrasePrefixQuery("user", "re")
+	// 前方一致
+	matchQuery := elastic.NewMatchPhrasePrefixQuery("user", *word)
 	searchResult, err := client.Search().
 		Index("twitter").   // search in index "twitter"
-		Query(matchQuery).   // specify the query
+		Query(matchQuery).  // specify the query
 		Sort("user", true). // sort by "user" field, ascending
 		From(0).Size(10).   // take documents 0-9
 		Pretty(true).       // pretty print request and response JSON
@@ -48,7 +63,7 @@ func main() {
 		}
 	}
 
-  fmt.Println("end")
+	fmt.Println("end")
 }
 
 // func esClient(endpoint string) Client {
