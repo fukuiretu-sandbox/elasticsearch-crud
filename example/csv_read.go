@@ -14,7 +14,7 @@ type hoge struct {
 }
 
 func newHoge(record []string) *hoge {
-	result := &hoge{}
+	result := new(hoge)
 	result.one = record[0]
 	result.two = record[1]
 	result.three = record[2]
