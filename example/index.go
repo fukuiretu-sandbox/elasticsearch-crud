@@ -7,8 +7,8 @@ import (
 )
 
 type tweet struct {
-	user    string
-	message string
+	User    string `json:"user"`
+	Message string `json:"message"`
 }
 
 func main() {
@@ -40,8 +40,8 @@ func main() {
 	// }
 
 	// bulk
-	tweet1 := tweet{user: "olivere", message: "Welcome to Golang and Elasticsearch."}
-	tweet2 := tweet{user: "sandrae", message: "Dancing all night long. Yeah."}
+	tweet1 := tweet{User: "abc", Message: "dokidoki"}
+	tweet2 := tweet{User: "def", Message: "wakuwaku"}
 	index1Req := elastic.NewBulkIndexRequest().Index("twitter").Type("tweet").Doc(tweet1)
 	index2Req := elastic.NewBulkIndexRequest().Index("twitter").Type("tweet").Doc(tweet2)
 

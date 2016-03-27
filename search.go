@@ -9,23 +9,34 @@ import (
 	"gopkg.in/olivere/elastic.v3"
 )
 
-type Tweet struct {
-	User    string
-	Message string
+type mappingData struct {
+	RestaurantID string `json:"restaurant_id"`
+	Name         string `json:"name"`
+	NameAlphabet string `json:"name_alphabet"`
+	NameKana     string `json:"name_kana"`
+	Address      string `json:"address"`
+	Description  string `json:"description"`
+	Purpose      string `json:"purpose"`
+	Category     string `json:"category"`
+	PhotoCount   string `json:"photo_count"`
+	MenuCount    string `json:"menu_count"`
+	AccessCount  string `json:"access_count"`
+	Closed       string `json:"closed"`
+	Location     string `json:"location"`
 }
 
 func main() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, `
-Usage of %s:
+  Usage of %s:
    %s [OPTIONS] ARGS...
-Options\n`, os.Args[0], os.Args[0])
+  Options\n`, os.Args[0], os.Args[0])
 		flag.PrintDefaults()
 	}
 
-	var word = flag.String("word", "hoge", "search word option")
+	word := flag.String("word", "hoge", "search word option")
+	limit := flag.Int("limit", 100, "search limit option")
 	flag.Parse()
-
 	fmt.Printf("search word is %d \n", *word)
 
 	fmt.Println("search start...")
@@ -35,42 +46,26 @@ Options\n`, os.Args[0], os.Args[0])
 		panic(err)
 	}
 
-	// Search with a term query
-	// 完全一致
-	// termQuery := elastic.NewTermQuery("user", "retu")
-	// 前方一致
-	matchQuery := elastic.NewMatchPhrasePrefixQuery("user", *word)
+	q := elastic.NewQueryStringQuery(*word)
+	q = q.DefaultField("name")
 	searchResult, err := client.Search().
-		Index("twitter").   // search in index "twitter"
-		Query(matchQuery).  // specify the query
-		Sort("user", true). // sort by "user" field, ascending
-		From(0).Size(10).   // take documents 0-9
-		Pretty(true).       // pretty print request and response JSON
-		Do()                // execute
+		Index("ldgourmet").   // search in index "twitter"
+		Query(q).             // specify the query
+		Sort("name", true).   // sort by "user" field, ascending
+		From(0).Size(*limit). // take documents 0-9
+		Pretty(true).         // pretty print request and response JSON
+		Do()                  // execute
 	if err != nil {
 		// Handle error
 		panic(err)
 	}
 
-	// searchResult is of type SearchResult and returns hits, suggestions,
-	// and all kinds of other information from Elasticsearch.
 	fmt.Printf("Query took %d milliseconds\n", searchResult.TookInMillis)
 
-	var ttyp Tweet
+	var ttyp mappingData
 	for _, item := range searchResult.Each(reflect.TypeOf(ttyp)) {
-		if t, ok := item.(Tweet); ok {
-			fmt.Printf("Tweet by %s: %s\n", t.User, t.Message)
+		if t, ok := item.(mappingData); ok {
+			fmt.Printf("mappingData by %d", t.Name)
 		}
 	}
-
-	fmt.Println("end")
 }
-
-// func esClient(endpoint string) Client {
-//   client, err := elastic.NewClient(elastic.SetURL(endpoint))
-//   if err != nil {
-// 		// Handle error
-// 		panic(err)
-// 	}
-//   return client
-// }
